@@ -18,6 +18,8 @@ DisplayBitCodeStimulus::DisplayBitCodeStimulus(const ParameterValueMap &p) :
     BasicTransformStimulus(p),
     code_variable(p[CODE_VARIABLE]),
     n_markers_variable(p[N_MARKERS]),
+    fr_trigger_variable(p[FR_TRIGGER]),
+//    trigger_start_variable(p[TRIGGER_START]),
     separation_ratio_variable(p[SEPARATION]),
     bg_luminance_variable(p[BG_LUMINANCE]),
     fg_luminance_variable(p[FG_LUMINANCE]),
@@ -27,7 +29,8 @@ DisplayBitCodeStimulus::DisplayBitCodeStimulus(const ParameterValueMap &p) :
     random_generator(generator, uni_dist)
 { 
 
-
+    trigger = 1;
+    
     shared_ptr<VariableRegistry> registry = global_variable_registry;
     shared_ptr<Variable> display_update_variable = registry->getVariable("#stimDisplayUpdate");
     
@@ -46,6 +49,8 @@ void DisplayBitCodeStimulus::describeComponent(ComponentInfo& info){
     info.setSignature("stimulus/display_bit_code");
     info.addParameter(CODE_VARIABLE);
     info.addParameter(N_MARKERS);
+    info.addParameter(FR_TRIGGER);
+//    info.addParameter(TRIGGER_START);
     info.addParameter(SEPARATION);
     info.addParameter(BG_LUMINANCE);
     info.addParameter(FG_LUMINANCE);
@@ -54,6 +59,8 @@ void DisplayBitCodeStimulus::describeComponent(ComponentInfo& info){
 
 const std::string DisplayBitCodeStimulus::CODE_VARIABLE("code");
 const std::string DisplayBitCodeStimulus::N_MARKERS("n_markers");
+const std::string DisplayBitCodeStimulus::FR_TRIGGER("fr_trigger");
+//const std::string DisplayBitCodeStimulus::TRIGGER_START("trigger_start");
 const std::string DisplayBitCodeStimulus::SEPARATION("separation_ratio");
 const std::string DisplayBitCodeStimulus::BG_LUMINANCE("bg_luminance");
 const std::string DisplayBitCodeStimulus::FG_LUMINANCE("fg_luminance");
@@ -64,9 +71,15 @@ DisplayBitCodeStimulus::~DisplayBitCodeStimulus(){ }
 
 
 void DisplayBitCodeStimulus::drawInUnitSquare(shared_ptr<StimulusDisplay> display){
-
     
     int n = (int)(n_markers_variable->getValue());
+    int f = (int)(fr_trigger_variable->getValue());
+    if (f==1){
+        n = n + 1.0;
+    }
+    
+//    int f = (int)(fr_trigger_variable->getValue());
+//    int trigger = (int)(trigger_start_variable->getValue());
     double sep_ratio = (double)(separation_ratio_variable->getValue());
     double marker_width = 1.0 / ((double)n + (double)(n+1)*sep_ratio);
     double sep_width = sep_ratio * marker_width;
@@ -105,6 +118,8 @@ void DisplayBitCodeStimulus::drawInUnitSquare(shared_ptr<StimulusDisplay> displa
         }
         
         code_variable->setValue(Datum((long)new_code));
+    
+//        trigger_start_variable->setValue(Datum((long)1));
     }
     
     z = 0.05;
@@ -112,21 +127,92 @@ void DisplayBitCodeStimulus::drawInUnitSquare(shared_ptr<StimulusDisplay> displa
     int current_code = (int)(code_variable->getValue());
     
     int counter = 0;
-    for(double x = sep_width; x <= 1.0; x += marker_width+sep_width){
-        
-        int bitmask = 1 << counter;
-        counter++;
-        
-        if((current_code & bitmask) == bitmask){
+    
+    if (f==1){
+        for(double x = sep_width; x <= 1.0-(marker_width+sep_width); x += marker_width+sep_width){
             
-            glBegin(GL_QUADS);
-            glColor4f(fg_lum, fg_lum, fg_lum, *alpha_multiplier);
-            glVertex3f(x,sep_height,z);
-            glVertex3f(x+marker_width,sep_height,z);
-            glVertex3f(x+marker_width,sep_height+marker_height,z);
-            glVertex3f(x,sep_height+marker_height,z);
-            glEnd();
+            int bitmask = 1 << counter;
+            counter++;
+            
+            if((current_code & bitmask) == bitmask){
+                
+                glBegin(GL_QUADS);
+                glColor4f(fg_lum, fg_lum, fg_lum, *alpha_multiplier);
+                glVertex3f(x,sep_height,z);
+                glVertex3f(x+marker_width,sep_height,z);
+                glVertex3f(x+marker_width,sep_height+marker_height,z);
+                glVertex3f(x,sep_height+marker_height,z);
+                glEnd();
+            }
         }
+        
+    }
+    else if (f==0){
+        for(double x = sep_width; x <= 1.0; x += marker_width+sep_width){
+            
+            int bitmask = 1 << counter;
+            counter++;
+            
+            if((current_code & bitmask) == bitmask){
+                
+                glBegin(GL_QUADS);
+                glColor4f(fg_lum, fg_lum, fg_lum, *alpha_multiplier);
+                glVertex3f(x,sep_height,z);
+                glVertex3f(x+marker_width,sep_height,z);
+                glVertex3f(x+marker_width,sep_height+marker_height,z);
+                glVertex3f(x,sep_height+marker_height,z);
+                glEnd();
+            }
+        }
+        
+    }
+//    for(double x = sep_width; x <= 1.0; x += marker_width+sep_width){
+//        
+//        int bitmask = 1 << counter;
+//        counter++;
+//        
+//        if((current_code & bitmask) == bitmask){
+//            
+//            glBegin(GL_QUADS);
+//            glColor4f(fg_lum, fg_lum, fg_lum, *alpha_multiplier);
+//            glVertex3f(x,sep_height,z);
+//            glVertex3f(x+marker_width,sep_height,z);
+//            glVertex3f(x+marker_width,sep_height+marker_height,z);
+//            glVertex3f(x,sep_height+marker_height,z);
+//            glEnd();
+//        }
+//    }
+    
+    double last_x_pos = sep_width + (counter-1)*(marker_width+sep_width);
+//    int trigger = (int)(trigger_start_variable->getValue());
+    if (f==1){
+        
+//        // extend background
+//        GLfloat z = 0.01;
+//        glBegin(GL_QUADS);
+//        glColor4f(bg_lum, bg_lum, bg_lum, *alpha_multiplier);
+//        glVertex3f(0.0,0.0,z);
+//        glVertex3f(1.0,0.0,z);
+//        glVertex3f(1.0,1.0,z);
+//        glVertex3f(0.0,1.0,z);
+//        glEnd();
+        
+//        z = 0.05;
+        glBegin(GL_QUADS);
+        glColor4f(trigger, trigger, trigger, *alpha_multiplier);
+        glVertex3f(last_x_pos,sep_height,z);
+        glVertex3f(last_x_pos+marker_width,sep_height,z);
+        glVertex3f(last_x_pos+marker_width,sep_height+marker_height,z);
+        glVertex3f(last_x_pos,sep_height+marker_height,z);
+        glEnd();
+        
+        if (trigger==1){
+            trigger--;
+        }
+        else if (trigger==0){
+            trigger++;
+        }
+        
     }
     
     glDisable(GL_BLEND);

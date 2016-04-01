@@ -16,7 +16,7 @@
     <!-- This XML gets inserted when you drop this object into the project -->
     <code>
       <stimulus type="display_bit_code" tag="My Display Bit Code Stimulus"
-                code="" n_markers="4" separation_ratio="1.0"
+                code="" n_markers="4" fr_trigger="0" separation_ratio="1.0"
                 bg_luminance="0.0" fg_luminance="1.0"
                 x_position="0.0" y_position="0.0"
                 x_size="9.0"  y_size = "1.0" rotation="0.0"

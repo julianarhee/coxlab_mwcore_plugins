@@ -33,6 +33,10 @@ protected:
     // number of bit markers to encode
     shared_ptr<Variable> n_markers_variable;
     
+    // frame trigger
+    shared_ptr<Variable> fr_trigger_variable;
+//    shared_ptr<Variable> trigger_start_variable;
+    
     // ratio of the size of the separation to the size of the bit markers
     shared_ptr<Variable> separation_ratio_variable;
     
@@ -47,6 +51,7 @@ protected:
 //    shared_ptr<ClockSync> clock_sync;
     shared_ptr<Variable> clock_offset_variable;
     
+    int trigger;
 
 public:
 
@@ -57,6 +62,8 @@ public:
 
     static const std::string CODE_VARIABLE;
     static const std::string N_MARKERS;
+    static const std::string FR_TRIGGER;
+//    static const std::string TRIGGER_START;
     static const std::string SEPARATION;
     static const std::string BG_LUMINANCE;
     static const std::string FG_LUMINANCE;
